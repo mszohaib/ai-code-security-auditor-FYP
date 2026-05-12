@@ -32,9 +32,12 @@ export function RegisterPage() {
   }
 
   return (
-    <section className="page-shell" style={{ maxWidth: 440 }}>
-      <h1 style={{ marginBottom: "0.35rem" }}>Create account</h1>
-      <p className="muted">Registers a Supabase user via the Node API.</p>
+    <section className="page-shell page-narrow">
+      <header className="page-header">
+        <p className="page-header__eyebrow">Get started</p>
+        <h1 className="page-header__title">Create account</h1>
+        <p className="page-header__desc muted">Registers a Supabase user via the Node API.</p>
+      </header>
       <form className="card form-stack" onSubmit={onSubmit}>
         <label>
           Email
@@ -58,11 +61,11 @@ export function RegisterPage() {
           />
         </label>
         {error && <p className="error-text">{error}</p>}
-        {info && <p className="muted">{info}</p>}
+        {info && <p className="muted text-small">{info}</p>}
         <button type="submit" className="btn btn-primary">
           Register
         </button>
-        <p className="muted inline-note">
+        <p className="muted text-small">
           Already registered? <Link to="/login">Sign in</Link>
         </p>
       </form>

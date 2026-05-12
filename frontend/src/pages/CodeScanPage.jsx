@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CodeEditor } from "../components/CodeEditor.jsx";
 import { VulnerabilityDashboard } from "../components/VulnerabilityDashboard.jsx";
 import { FixSuggestionsPanel } from "../components/FixSuggestionsPanel.jsx";
+import { ScanSummaryBar } from "../components/ScanSummaryBar.jsx";
 import { postJson } from "../services/api.js";
 
 const SAMPLE = String.raw`import sqlite3
@@ -99,9 +100,10 @@ export function CodeScanPage() {
 
   return (
     <div className="page-shell">
-      <header>
-        <h1 style={{ margin: "0 0 0.35rem" }}>Security scan</h1>
-        <p className="muted" style={{ margin: 0 }}>
+      <header className="page-header">
+        <p className="page-header__eyebrow">Static analysis</p>
+        <h1 className="page-header__title">Security scan</h1>
+        <p className="page-header__desc muted">
           Run analysis against the Flask engine, then use Save scan to store results in Supabase for your
           account.
         </p>
@@ -114,38 +116,43 @@ export function CodeScanPage() {
           language={language}
           onLanguageChange={setLanguage}
         />
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div className="toolbar" style={{ margin: 0 }}>
-            <button type="button" className="btn btn-primary" onClick={runScan} disabled={scanning}>
-              {scanning ? "Scanning…" : "Run scan"}
-            </button>
-            {resultsReady && !scanning && (
-              <button
-                type="button"
-                className="btn"
-                onClick={saveScan}
-                disabled={saveStatus === "saving" || saveStale}
-                title={
-                  saveStale
-                    ? "Re-run scan after editing code or changing language"
-                    : undefined
-                }
-              >
-                {saveStatus === "saving" ? "Saving…" : "Save scan"}
+        <div className="scan-col">
+          <div className="toolbar toolbar--actions">
+            <div className="toolbar__primary">
+              <button type="button" className="btn btn-primary" onClick={runScan} disabled={scanning}>
+                {scanning ? "Scanning…" : "Run scan"}
               </button>
-            )}
-            {saveMessage && (
-              <span className={saveStatus === "error" ? "error-text" : "muted inline-note"}>
-                {saveMessage}
-              </span>
-            )}
-            {saveStale && (
-              <span className="muted inline-note">Code or language changed — run scan again to enable save.</span>
-            )}
-            <span className="muted inline-note">
-              Results include Bandit (Python) and Semgrep-style rules.
-            </span>
+              {resultsReady && !scanning && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={saveScan}
+                  disabled={saveStatus === "saving" || saveStale}
+                  title={
+                    saveStale
+                      ? "Re-run scan after editing code or changing language"
+                      : undefined
+                  }
+                >
+                  {saveStatus === "saving" ? "Saving…" : "Save scan"}
+                </button>
+              )}
+            </div>
+            <div className="toolbar__meta">
+              {saveMessage && (
+                <span className={saveStatus === "error" ? "error-text text-small" : "muted text-small"}>
+                  {saveMessage}
+                </span>
+              )}
+              {saveStale && (
+                <span className="muted text-small">Code or language changed — run scan again to save.</span>
+              )}
+              <span className="muted text-small">Bandit (Python) · Semgrep rules</span>
+            </div>
           </div>
+
+          {resultsReady && !scanning && <ScanSummaryBar findings={vulnerabilities} />}
+
           <VulnerabilityDashboard
             vulnerabilities={vulnerabilities}
             selectedId={selectedId}

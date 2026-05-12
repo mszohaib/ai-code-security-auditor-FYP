@@ -41,17 +41,18 @@ export function ScanHistoryPage() {
 
   return (
     <div className="page-shell">
-      <h1 style={{ marginBottom: "0.35rem" }}>Scan history</h1>
-      <p className="muted" style={{ marginTop: 0 }}>
-        Recent scans saved for your account in Supabase.
-      </p>
+      <header className="page-header">
+        <p className="page-header__eyebrow">Your workspace</p>
+        <h1 className="page-header__title">Scan history</h1>
+        <p className="page-header__desc muted">Recent scans saved for your account in Supabase.</p>
+      </header>
       {loading && <p className="muted">Loading…</p>}
       {error && <p className="error-text">{error}</p>}
       {!loading && !error && rows.length === 0 && (
         <p className="muted">No scans recorded yet. Run a scan from the scanner page.</p>
       )}
       {!loading && rows.length > 0 && (
-        <div className="card" style={{ overflowX: "auto" }}>
+        <div className="card card--table">
           <table className="history-table">
             <thead>
               <tr>
@@ -64,10 +65,18 @@ export function ScanHistoryPage() {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id}>
-                  <td>{formatWhen(r.created_at)}</td>
-                  <td>{r.language || "—"}</td>
-                  <td>{r.findings_count ?? "—"}</td>
-                  <td className="mono-snippet">{r.summary || ""}</td>
+                  <td className="history-table__when">{formatWhen(r.created_at)}</td>
+                  <td>
+                    <span className="tag tag--lang">{r.language || "—"}</span>
+                  </td>
+                  <td>
+                    <span
+                      className={`history-count${(r.findings_count ?? 0) > 0 ? " history-count--warn" : ""}`}
+                    >
+                      {r.findings_count ?? "—"}
+                    </span>
+                  </td>
+                  <td className="mono-snippet history-table__summary">{r.summary || ""}</td>
                 </tr>
               ))}
             </tbody>

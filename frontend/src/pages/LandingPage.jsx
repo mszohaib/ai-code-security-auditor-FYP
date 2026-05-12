@@ -6,11 +6,11 @@ export function LandingPage() {
 
   return (
     <section className="page-shell hero">
-      <h1>Find risky patterns before they ship.</h1>
-      <p>
-        Paste source code, run static analysis with Bandit and Semgrep-inspired
-        rules, and review clear explanations with suggested fixes for issues
-        like SQL injection, XSS, and weak input validation.
+      <p className="page-header__eyebrow">AI-assisted SAST</p>
+      <h1 className="hero__title">Find risky patterns before they ship.</h1>
+      <p className="hero__lead muted">
+        Paste source code, run static analysis with Bandit and Semgrep-inspired rules, and review clear
+        explanations with suggested fixes for issues like SQL injection, XSS, and weak input validation.
       </p>
       <div className="cta-row">
         {token ? (
@@ -22,7 +22,7 @@ export function LandingPage() {
             <Link className="btn btn-primary" to="/register">
               Create account
             </Link>
-            <Link className="btn" to="/login">
+            <Link className="btn btn-secondary" to="/login">
               Sign in
             </Link>
           </>
@@ -30,25 +30,33 @@ export function LandingPage() {
       </div>
 
       <div className="grid-2">
-        <article className="card">
+        <article className="card card--lift">
+          <div className="card__icon" aria-hidden="true">
+            ◇
+          </div>
           <h3>Static analysis pipeline</h3>
           <p>
-            Python Bandit plus Semgrep-style checks produce structured findings
-            with severity, locations, and remediation hints.
+            Python Bandit plus Semgrep-style checks produce structured findings with severity, locations, and
+            remediation hints.
           </p>
         </article>
-        <article className="card">
+        <article className="card card--lift">
+          <div className="card__icon" aria-hidden="true">
+            ◈
+          </div>
           <h3>Scan history</h3>
           <p>
-            Authenticated users can persist scans in Supabase and revisit past
-            results from the history view.
+            Authenticated users can persist scans in Supabase and revisit past results from the history view.
           </p>
         </article>
-        <article className="card">
+        <article className="card card--lift">
+          <div className="card__icon" aria-hidden="true">
+            ◆
+          </div>
           <h3>Developer-friendly UI</h3>
           <p>
-            A focused editor, vulnerability dashboard, and fix suggestions panel
-            keep triage and remediation in one place.
+            A focused editor, vulnerability dashboard, and fix suggestions panel keep triage and remediation in
+            one place.
           </p>
         </article>
       </div>

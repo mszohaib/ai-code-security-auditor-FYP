@@ -23,9 +23,12 @@ export function LoginPage() {
   }
 
   return (
-    <section className="page-shell" style={{ maxWidth: 440 }}>
-      <h1 style={{ marginBottom: "0.35rem" }}>Sign in</h1>
-      <p className="muted">Use the credentials you registered with Supabase-backed auth.</p>
+    <section className="page-shell page-narrow">
+      <header className="page-header">
+        <p className="page-header__eyebrow">Welcome back</p>
+        <h1 className="page-header__title">Sign in</h1>
+        <p className="page-header__desc muted">Use the credentials you registered with Supabase-backed auth.</p>
+      </header>
       <form className="card form-stack" onSubmit={onSubmit}>
         <label>
           Email
@@ -51,7 +54,7 @@ export function LoginPage() {
         <button type="submit" className="btn btn-primary">
           Continue
         </button>
-        <p className="muted inline-note">
+        <p className="muted text-small">
           Need an account? <Link to="/register">Register</Link>
         </p>
       </form>
