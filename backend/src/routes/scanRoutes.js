@@ -18,28 +18,10 @@ scanRoutes.post("/", requireAuth, async (req, res) => {
     });
 
     const vulnerabilities = engineResult.vulnerabilities || [];
-    const summary =
-      vulnerabilities[0]?.title ||
-      (vulnerabilities.length ? `${vulnerabilities.length} findings` : "Clean scan");
-
-    const admin = createSupabaseAdminClient();
-    const { error: insertError } = await admin.from("security_scans").insert({
-      user_id: req.user.id,
-      language: language || "python",
-      findings_count: vulnerabilities.length,
-      summary,
-      raw_engine_response: engineResult,
-      code_sample: code.slice(0, 8000),
-    });
-
-    if (insertError) {
-      console.warn("[scans] Supabase insert failed:", insertError.message);
-    }
 
     return res.json({
       vulnerabilities,
       meta: engineResult.meta || {},
-      persisted: !insertError,
     });
   } catch (err) {
     console.error("[scans] analyze failed:", err);
@@ -47,6 +29,47 @@ scanRoutes.post("/", requireAuth, async (req, res) => {
       error: err.message || "Security engine unavailable",
     });
   }
+});
+
+scanRoutes.post("/save", requireAuth, async (req, res) => {
+  const { code, language, vulnerabilities, meta } = req.body || {};
+  if (!code || typeof code !== "string") {
+    return res.status(400).json({ error: "code is required" });
+  }
+  if (!Array.isArray(vulnerabilities)) {
+    return res.status(400).json({ error: "vulnerabilities must be an array" });
+  }
+
+  const summary =
+    vulnerabilities[0]?.title ||
+    (vulnerabilities.length ? `${vulnerabilities.length} findings` : "Clean scan");
+
+  const admin = createSupabaseAdminClient();
+  const rawPayload = {
+    vulnerabilities,
+    meta: meta && typeof meta === "object" ? meta : {},
+    saved_at: new Date().toISOString(),
+  };
+
+  const { data, error: insertError } = await admin
+    .from("security_scans")
+    .insert({
+      user_id: req.user.id,
+      language: language || "python",
+      findings_count: vulnerabilities.length,
+      summary,
+      raw_engine_response: rawPayload,
+      code_sample: code.slice(0, 8000),
+    })
+    .select("id")
+    .single();
+
+  if (insertError) {
+    console.error("[scans] save failed:", insertError.message);
+    return res.status(400).json({ error: insertError.message });
+  }
+
+  return res.status(201).json({ ok: true, id: data?.id });
 });
 
 scanRoutes.get("/history", requireAuth, async (req, res) => {

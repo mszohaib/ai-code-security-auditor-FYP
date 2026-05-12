@@ -19,6 +19,10 @@ export function CodeScanPage() {
   const [error, setError] = useState("");
   const [vulnerabilities, setVulnerabilities] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  const [resultsReady, setResultsReady] = useState(false);
+  const [savePayload, setSavePayload] = useState(null);
+  const [saveStatus, setSaveStatus] = useState("idle");
+  const [saveMessage, setSaveMessage] = useState("");
 
   const selected = useMemo(() => {
     if (!selectedId) return null;
@@ -31,10 +35,22 @@ export function CodeScanPage() {
     setScanning(true);
     setError("");
     setSelectedId(null);
+    setResultsReady(false);
+    setSaveStatus("idle");
+    setSaveMessage("");
+    setSavePayload(null);
     try {
       const data = await postJson("/api/scans", { code, language });
       const items = data.vulnerabilities || [];
+      const meta = data.meta && typeof data.meta === "object" ? data.meta : {};
       setVulnerabilities(items);
+      setSavePayload({
+        code,
+        language,
+        vulnerabilities: items,
+        meta,
+      });
+      setResultsReady(true);
       if (items.length) {
         const first = items[0];
         setSelectedId(first.id || `${first.tool}-${first.title}-${first.line_start}`);
@@ -42,17 +58,52 @@ export function CodeScanPage() {
     } catch (e) {
       setError(e.message || "Scan failed");
       setVulnerabilities([]);
+      setSavePayload(null);
+      setResultsReady(false);
     } finally {
       setScanning(false);
     }
   }
+
+  async function saveScan() {
+    if (!savePayload) {
+      setSaveMessage("Run a scan before saving.");
+      setSaveStatus("error");
+      return;
+    }
+    if (savePayload.code !== code || savePayload.language !== language) {
+      setSaveMessage("Code or language changed since this scan. Run scan again before saving.");
+      setSaveStatus("error");
+      return;
+    }
+    setSaveStatus("saving");
+    setSaveMessage("");
+    try {
+      await postJson("/api/scans/save", {
+        code: savePayload.code,
+        language: savePayload.language,
+        vulnerabilities: savePayload.vulnerabilities,
+        meta: savePayload.meta,
+      });
+      setSaveStatus("saved");
+      setSaveMessage("Scan saved to your history.");
+    } catch (e) {
+      setSaveStatus("error");
+      setSaveMessage(e.message || "Could not save scan");
+    }
+  }
+
+  const saveStale =
+    savePayload &&
+    (savePayload.code !== code || savePayload.language !== language);
 
   return (
     <div className="page-shell">
       <header>
         <h1 style={{ margin: "0 0 0.35rem" }}>Security scan</h1>
         <p className="muted" style={{ margin: 0 }}>
-          Code is sent to the Express API, forwarded to the Flask engine, and optionally stored after each run.
+          Run analysis against the Flask engine, then use Save scan to store results in Supabase for your
+          account.
         </p>
       </header>
 
@@ -68,6 +119,29 @@ export function CodeScanPage() {
             <button type="button" className="btn btn-primary" onClick={runScan} disabled={scanning}>
               {scanning ? "Scanning…" : "Run scan"}
             </button>
+            {resultsReady && !scanning && (
+              <button
+                type="button"
+                className="btn"
+                onClick={saveScan}
+                disabled={saveStatus === "saving" || saveStale}
+                title={
+                  saveStale
+                    ? "Re-run scan after editing code or changing language"
+                    : undefined
+                }
+              >
+                {saveStatus === "saving" ? "Saving…" : "Save scan"}
+              </button>
+            )}
+            {saveMessage && (
+              <span className={saveStatus === "error" ? "error-text" : "muted inline-note"}>
+                {saveMessage}
+              </span>
+            )}
+            {saveStale && (
+              <span className="muted inline-note">Code or language changed — run scan again to enable save.</span>
+            )}
             <span className="muted inline-note">
               Results include Bandit (Python) and Semgrep-style rules.
             </span>
