@@ -1,0 +1,27 @@
+rules:
+  - id: sqli-python-string-format
+    languages: [python]
+    message: Possible SQL injection via string concatenation or formatting inside execute().
+    severity: ERROR
+    pattern-either:
+      - pattern: $C.execute(... + ...)
+      - pattern: $C.execute(... % ...)
+      - pattern: $C.execute($SQL.format(...))
+      - pattern: |
+          $SQL = ... + ...
+          ...
+          $C.execute($SQL)
+
+  - id: xss-innerhtml-assignment
+    languages: [javascript, typescript]
+    message: Potential DOM XSS via innerHTML assignment with untrusted data.
+    severity: WARNING
+    pattern: $E.innerHTML = $V;
+
+  - id: weak-input-validation
+    languages: [python]
+    message: eval/exec can execute arbitrary code; validate and avoid dynamic evaluation.
+    severity: ERROR
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: exec(...)
