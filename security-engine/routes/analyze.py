@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify, request
 
 from config import Config
 from services.bandit_service import run_bandit_scan
+from services.groq_ai_fix import attach_ai_fixes
 from services.semgrep_service import run_semgrep_scan
 from services.vulnerability_mapper import merge_and_enrich
 
@@ -38,6 +39,7 @@ def analyze():
 
     semgrep_results = run_semgrep_scan(code, language)
     vulnerabilities = merge_and_enrich(bandit_results, semgrep_results)
+    vulnerabilities = attach_ai_fixes(code, language, vulnerabilities)
 
     return jsonify(
         {
@@ -46,6 +48,7 @@ def analyze():
             "meta": {
                 "language": language,
                 "tools": {"bandit": bool(bandit_results), "semgrep": True},
+                "groq_ai_fix": bool((Config.GROQ_API_KEY or "").strip()),
                 "counts": {
                     "bandit": len(bandit_results),
                     "semgrep": len(semgrep_results),

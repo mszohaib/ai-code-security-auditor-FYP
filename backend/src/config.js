@@ -11,6 +11,9 @@ export const config = {
     /\/$/,
     ""
   ),
+  geminiApiKey: process.env.GEMINI_API_KEY || "",
+  geminiAutofixModel:
+    process.env.GEMINI_AUTOFIX_MODEL || "gemini-2.5-flash",
 };
 
 export function assertConfig() {

@@ -1,4 +1,4 @@
-export function CodeEditor({ value, onChange, language, onLanguageChange }) {
+export function CodeEditor({ value, onChange, language, onLanguageChange, footer = null }) {
   return (
     <div className="card">
       <div className="card__head">
@@ -15,6 +15,7 @@ export function CodeEditor({ value, onChange, language, onLanguageChange }) {
         onChange={(e) => onChange(e.target.value)}
         placeholder="# Paste code here&#10;def example():&#10;    pass"
       />
+      {footer}
       <div className="toolbar toolbar--tight">
         <label className="field-inline">
           <span className="muted text-small">Language</span>
